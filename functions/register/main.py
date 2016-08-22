@@ -38,7 +38,7 @@ def handle(e, ctx):
     response = lambda_client.invoke(FunctionName='tx-manager_request',Payload=json.dumps(register_payload))
     payload = json.loads(response['Payload'].read())
     if 'error' in payload:
-        return 'Bad Request: {0}'.format(payload["error"])
+        raise Exception('Bad Request: {0}'.format(payload["error"]))
     else:
         return {'success': True}
      
