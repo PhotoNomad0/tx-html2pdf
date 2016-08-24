@@ -4,39 +4,52 @@ var wkhtmltopdf = require('wkhtmltopdf');
 var fs = require('fs');
 var AWS = require('aws-sdk');
 var config = require('./config.js');
+var https = require('https');
+var http = require('http');
+var url = require("url");
+var path = require("path");
+var AdmZip = require('adm-zip');
+var mkdirp = require('mkdirp');
+var request = require('request');
 
 var s3 = new AWS.S3();
 
 exports.handle = function (event, context, callback) {
-    if (!event.job) {
-        console.error('unable to get the job');
-        callback('unable to get the job', {});
-        return
+    console.log(event);
+
+    if (!event.data.job) {
+        var msg = '"job" was not in payload';
+        console.error(msg);
+        callback(msg, {});
+        return;
     }
-    var job = event.job
+    var job = event.data.job
 
     if (!job.source) {
-        console.error('unable to get the source from the job');
-        callback('unable to get the source from the job', {});
-        return
+        var msg = '"source" was not in "job"';
+        console.error(msg);
+        callback(msg, {});
+        return;
     }
-    var source = job.source
+    var source = job.source;
 
-    if (!event.bucket) {
-        console.error('unable to get the bucket');
-        callback('unable to get the bucket', {});
-        return
+    if (!event.data.s3_bucket) {
+        var msg = '"s3_bucket" was not payload';
+        console.error(msg);
+        callback(msg, {});
+        return;
     }
-    var dstBucket = event.bucket
+    var dstBucket = event.data.s3_bucket;
 
-    if (!event.output_file) {
-        console.error('unable to get the output_file');
-        callback('unable to get the output_file', {});
-        return
+    if (!event.data.s3_file) {
+        var msg = '"s3_file" was not in payload';
+        console.error(msg);
+        callback(msg, {});
+        return;
     }
-    var outputFile = event.output_file
+    var outputFile = event.data.s3_file
 
-    console.info('source url: ' + source);
+    console.info('source: ' + source);
     console.info('dstBucket: ' + dstBucket);
     console.info('outputFile: ' + outputFile);
 
@@ -46,16 +59,31 @@ exports.handle = function (event, context, callback) {
     };
 
     if (job.options) {
-       for (var attrname in job.options) { 
-           options[attrname] = job.options[attrname]; 
+       for (var attrname in job.options) {
+           options[attrname] = job.options[attrname];
        }
     }
 
-    var tempFile = '/tmp/' + context.aws_request_id;
+    var working_dir = '/tmp/'+console.aws_request_id;
+    mkdirp(working_dir);
+    if(/^https{0,1}:\/\//.test(source)){
+        var parsed = url.parse(source);
+        var filename = working_dir+"/"+path.basename(parsed.pathname);
+        request(url).pipe(filename)
+        if(/\.zip$/.test(filename)) {
+            var zip = new AdmZip(filename);
+            zip.extractAllTo(working_dir, true);
+        }
+    }
+    else {
+        fs.writeFile(workint_dir+"/"+job.job_id+"."+job.input_format, source, 'utf8');
+    }
+
+    var tempFile = '/tmp/' + context.aws_request_id + "." + job.output_format;
     var writeStream = fs.createWriteStream(tempFile);
 
     //wkhtmltopdf(source, {pageSize: options.page_size, lineSpacing: options.line_spacing}, (err, stream) => {
-    wkhtmltopdf(source, {pageSize: options.page_size}, (err, stream) => {
+    wkhtmltopdf(workingDir+'/*.html', {pageSize: options.page_size}, (err, stream) => {
         s3.putObject({
             Bucket: dstBucket,
             Key: outputFile,

@@ -7,18 +7,18 @@ from __future__ import print_function
 import boto3
 import json
 
-def handle(e, ctx):
+def handle(event, context):
     register_payload = {
         "action": "module",
         "data": {
             "name": "tx-html2pdf_convert",
             "version": "1",
             "type": "conversion",
-            "resource_types": [ "obs", "bible" ],
-            "input_format": [ "html" ],
-            "output_format": [ "pdf" ],
-            "options": [ "language", "css", "page_size" ],
-            "private_links": [ ],
+            "resource_types": ["obs", "bible", "tn", "ta", "tw", "tq"],
+            "input_format": ["html"],
+            "output_format": ["pdf"],
+            "options": ["language", "css", "page_size"],
+            "private_links": [],
             "public_links": [
                 {
                     "href": "/html2pdf",
