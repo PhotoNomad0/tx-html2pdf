@@ -4,11 +4,11 @@
   "description": "Convert HTML to PDF using Webkit (QtWebKit) on AWS Lambda",
   "main": "index.js",
   "dependencies": {
-    "adm-zip": "^0.4.7",
     "aws-sdk": "^2.4.0",
     "fs": "^0.0.2",
     "mkdirs": "0.0.2",
     "request": "^2.74.0",
+    "unzip": "^0.1.11",
     "wkhtmltopdf": "^0.1.6"
   },
   "devDependencies": {},

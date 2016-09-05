@@ -3,12 +3,11 @@
 var wkhtmltopdf = require('wkhtmltopdf');
 var fs = require('fs');
 var AWS = require('aws-sdk');
-var config = require('./config.js');
 var https = require('https');
 var http = require('http');
 var url = require("url");
 var path = require("path");
-var AdmZip = require('adm-zip');
+var unzip = require('unzip');
 var mkdirp = require('mkdirp');
 var request = require('request');
 
@@ -64,26 +63,28 @@ exports.handle = function (event, context, callback) {
        }
     }
 
-    var working_dir = '/tmp/'+console.aws_request_id;
-    mkdirp(working_dir);
+    var workingDir = '/tmp/'+context.awsRequestId;
+    var inputFile = '';
+    mkdirp(workingDir);
     if(/^https{0,1}:\/\//.test(source)){
         var parsed = url.parse(source);
-        var filename = working_dir+"/"+path.basename(parsed.pathname);
-        request(url).pipe(filename)
+        var filename = workingDir+"/"+path.basename(parsed.pathname);
+        request(source).pipe(fs.createWriteStream(filename))
+        fs.writeFile(filename, source, 'utf8');
         if(/\.zip$/.test(filename)) {
-            var zip = new AdmZip(filename);
-            zip.extractAllTo(working_dir, true);
+            fs.createReadStream(filename).pipe(unzip.Extract({ path: workingDir }));
         }
     }
     else {
-        fs.writeFile(workint_dir+"/"+job.job_id+"."+job.input_format, source, 'utf8');
+        inputFile = workint_dir+"/"+job.job_id+"."+job.input_format;
+        fs.writeFile(inputFile, source, 'utf8');
     }
 
-    var tempFile = '/tmp/' + context.aws_request_id + "." + job.output_format;
+    var tempFile = '/tmp/' + context.awsRequestId + "." + job.output_format;
     var writeStream = fs.createWriteStream(tempFile);
 
     //wkhtmltopdf(source, {pageSize: options.page_size, lineSpacing: options.line_spacing}, (err, stream) => {
-    wkhtmltopdf(workingDir+'/*.html', {pageSize: options.page_size}, (err, stream) => {
+    wkhtmltopdf(fs.createReadStream(workingDir+'/test.html)', {pageSize: options.page_size}, (err, stream) => {
         s3.putObject({
             Bucket: dstBucket,
             Key: outputFile,
@@ -99,4 +100,6 @@ exports.handle = function (event, context, callback) {
             }
         });
     }).pipe(writeStream);
+
+    callback({}, {'success': true})
 };
