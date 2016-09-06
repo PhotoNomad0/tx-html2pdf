@@ -2,44 +2,26 @@
 
 # Method for  registering this module
 
-from __future__ import print_function
-
-import boto3
+from __future__ import print_function, unicode_literals
+import requests
 import json
 
-def handle(event, context):
-    register_payload = {
-        "action": "module",
-        "data": {
-            "name": "tx-html2pdf_convert",
-            "version": "1",
-            "type": "conversion",
-            "resource_types": ["obs", "bible", "tn", "ta", "tw", "tq"],
-            "input_format": ["html"],
-            "output_format": ["pdf"],
-            "options": ["language", "css", "page_size"],
-            "private_links": [],
-            "public_links": [
-                {
-                    "href": "/html2pdf",
-                    "rel": "list",
-                    "method": "GET"
-                },
-                {
-                    "href": "/html2pdf",
-                    "rel": "create",
-                    "method": "POST"
-                },
-            ]
-        }
-    }
+def handle(event, ctx):
+    if not 'api_url' in event:
+        raise Exception("'api_url' not in payload")
 
-    lambda_client = boto3.client('lambda')
-    response = lambda_client.invoke(FunctionName='tx-manager_request',Payload=json.dumps(register_payload))
-    payload = json.loads(response['Payload'].read())
-    if 'error' in payload:
-        raise Exception('Bad Request: {0}'.format(payload["error"]))
-    else:
-        return {'success': True}
-     
+    post_url = event['api_url']+'/tx/module'
+    post_data = {
+                 "name": "tx-html2pdf_convert",
+                 "version": "1",
+                 "type": "conversion",
+                 "resource_types": ["obs", "bible", "tn", "ta", "tw", "tq"],
+                 "input_format": ["html"],
+                 "output_format": ["pdf"],
+                 "options": ["language", "css", "page_size"],
+                 "private_links": [],
+                 "public_links": []
+                 }
 
+    response = requests.post(post_url, data=post_data, headers={'content-type': 'application/json'})
+    return json.loads(response.text)
