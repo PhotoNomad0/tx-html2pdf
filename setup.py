@@ -1,49 +1,28 @@
-import os
-from setuptools import setup
-from setuptools.command.install import install
+from setuptools import setup, find_packages
+from codecs import open
+from os import path
+
+here = path.abspath(path.dirname(__file__))
 
 
-# Utility function to read the README file.
-# Used for the long_description.  It's nice, because now 1) we have a top level
-# README file and 2) it's easier to type in the README file than to put a raw
-# string in below ...
-def read(f_name):
-    return open(os.path.join(os.path.dirname(__file__), f_name)).read()
-
-
-class PostInstallCommand(install):
-    """
-    Register this converter with tX-manager
-    """
-    def run(self):
-        from register import register
-        register()
-
-        install.run(self)
-
+with open(path.join(here, "README.rst"), "r") as f:
+    long_description = f.read()
 
 setup(
     name="tx-html2pdf",
-    version="0.0.1",
+    version="1.0.0",
+    description="USFM-to-HTML conversion",
+    long_description=long_description,
+    url="https://github.com/unfoldingWord-dev/tx-html2pdf",
     author="unfoldingWord",
-    author_email="unfoldingword.org",
-    description="A library of Python scripts to convert a git repository into publishable text.",
+    author_email="info@door43.org",
     license="MIT",
-    keywords="unfoldingWord publish",
-    url="https://github.org/unfoldingWord-dev/tx-html2pdf",
-    packages=['register', 'obs'],
-    long_description=read('README.md'),
-    classifiers=[],
-    dependency_links=[
-        'git+git://github.com/unfoldingWord-dev/uw_tools.git#egg=uw_tools',
+    classifiers=[
+        "License :: OSI Approved :: MIT License",
+        "Programming Language :: Python :: 2.7",
     ],
-    install_requires=[
-        'markdown',
-        'requests',
-        'uw_tools'
-    ],
-    test_suite='tests',
-    cmdclass={
-        'install': PostInstallCommand
-    }
+    keywords=["html", "pdf"],
+    packages=find_packages(),
+    install_requires=["future", "requests"],
+    test_suite="tests"
 )
