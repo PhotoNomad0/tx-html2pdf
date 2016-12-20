@@ -2,16 +2,10 @@ from setuptools import setup, find_packages
 from codecs import open
 from os import path
 
-here = path.abspath(path.dirname(__file__))
-
-
-with open(path.join(here, "README.rst"), "r") as f:
-    long_description = f.read()
-
 setup(
     name="tx-html2pdf",
     version="1.0.0",
-    description="USFM-to-HTML conversion",
+    description="HTML-to-PDF conversion",
     long_description=long_description,
     url="https://github.com/unfoldingWord-dev/tx-html2pdf",
     author="unfoldingWord",
