@@ -6,7 +6,7 @@ setup(
     name="tx-html2pdf",
     version="1.0.0",
     description="HTML-to-PDF conversion",
-    long_description=long_description,
+    long_description="Converter for HTML to PDF",
     url="https://github.com/unfoldingWord-dev/tx-html2pdf",
     author="unfoldingWord",
     author_email="info@door43.org",
